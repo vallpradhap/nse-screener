@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NSE 10-Min Stock Screener</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        form {
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, button, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        textarea {
+            height: 60px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center;
+        }
+        th {
+            background: #eee;
+        }
+        .bullish {
+            background-color: #c8f7c5;
+        }
+        .bearish {
+            background-color: #f7c5c5;
+        }
+        .top10 {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>NSE 10-Min Stock Screener</h1>
+
+    <form method="POST" action="/">
+        <label for="stocks">Enter Stock Symbols (comma-separated):</label>
+        <textarea name="stocks" id="stocks" placeholder="Example: RELIANCE.NS, TCS.NS, INFY.NS">{{ stocks }}</textarea>
+
+        <label for="mode">Select Mode:</label>
+        <select name="mode" id="mode" onchange="toggleDateInput()">
+            <option value="Live" {% if mode == "Live" %}selected{% endif %}>Live</option>
+            <option value="Historical" {% if mode == "Historical" %}selected{% endif %}>Historical</option>
+        </select>
+
+        <div id="dateInput" style="display: {{ 'block' if mode == 'Historical' else 'none' }}">
+            <label for="date">Select Date (YYYY-MM-DD):</label>
+            <input type="date" name="date" value="{{ date }}">
+        </div>
+
+        <button type="submit">Run Screener</button>
+    </form>
+
+    {% if results %}
+    <table>
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>1st Open</th>
+                <th>1st Close</th>
+                <th>2nd Open</th>
+                <th>2nd Close</th>
+                <th>Signal</th>
+                <th>Top 10</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in results %}
+            <tr class="{% if row.signal == 'Bullish' %}bullish{% elif row.signal == 'Bearish' %}bearish{% endif %}">
+                <td>{{ row.symbol }}</td>
+                <td>{{ row.first_open }}</td>
+                <td>{{ row.first_close }}</td>
+                <td>{{ row.second_open }}</td>
+                <td>{{ row.second_close }}</td>
+                <td>{{ row.signal }}</td>
+                <td class="top10">{{ row.top10 }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <script>
+        function toggleDateInput() {
+            const mode = document.getElementById("mode").value;
+            const dateInput = document.getElementById("dateInput");
+            dateInput.style.display = mode === "Historical" ? "block" : "none";
+        }
+    </script>
+</body>
+</html>
